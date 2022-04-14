@@ -1,0 +1,39 @@
+---
+name: "Check for Semantic PR and Commit Titles"
+
+on:
+  pull_request:
+    types: [ opened, reopened, synchronize, edited ]
+  workflow_call:
+
+env:
+  PR_TITLE: ${{ github.event.pull_request.title }}
+  COMMITS_URL: ${{ github.event.pull_request.commits_url }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  SEMANTIC_PATTERN: |-
+__PATTERN__
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Fetch PR Details
+      shell: bash
+      run: |
+        if [[ $GITHUB_TOKEN ]]; then
+          json=$( curl --header "Authorization: Bearer $GITHUB_TOKEN" --fail --retry 3 --silent "$COMMITS_URL" )
+        else
+          json=$( curl --fail --retry 3 --silent "$COMMITS_URL" )
+        fi
+        echo 'commits<<EOF' >> $GITHUB_ENV
+        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+
+    - name: Check PR Title and Commit Title(s)
+      shell: bash
+      run: |
+__SCRIPT__

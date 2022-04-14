@@ -1,0 +1,39 @@
+---
+name: "CI Tests"
+
+on:
+  pull_request:
+    types: [ opened, reopened, synchronize, edited ]
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
+    - name: Test generated workflow matches
+      shell: bash
+      run: |
+        ./generate.sh
+        
+        changed_file_count=$( git status --short --untracked-files=all | wc -l )
+        if [[ ! $changed_file_count =~ 0 ]]; then
+          echo ::error::Generated workflow does not match. Run ./generate.sh and try again.
+          exit 1
+        fi
+
+    - name: Unit tests
+      shell: bash
+      run: |
+        exit_code=0
+
+        if [[ ! ./test_semantic_pattern.sh ]]; then
+          exit_code=1
+        fi
+        if [[ ! ./test_semantic_script.sh ]]; then
+          exit_code=1
+        fi
+
+        exit $exit_code
