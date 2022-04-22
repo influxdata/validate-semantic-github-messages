@@ -9,6 +9,7 @@ on:
 env:
   PR_TITLE: ${{ github.event.pull_request.title }}
   COMMITS_URL: ${{ github.event.pull_request.commits_url }}
+  COMMITS_HISTORY: 1 
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SEMANTIC_PATTERN: |-
 __PATTERN__
@@ -30,7 +31,7 @@ jobs:
           json=$( curl --fail --retry 3 --silent "$COMMITS_URL" )
         fi
         echo 'commits<<EOF' >> $GITHUB_ENV
-        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' >> $GITHUB_ENV
+        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | tail -$COMMITS_HISTORY >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
 
     - name: Check PR Title and Commit Title(s)
