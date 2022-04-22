@@ -29,8 +29,15 @@ jobs:
         else
           json=$( curl --fail --retry 3 --silent "$COMMITS_URL" )
         fi
+	
+        if [[ $COMMITS_HISTORY ]]; then
+          echo "commits_hist=$COMMITS_HISTORY" >> $GITHUB_ENV
+        else
+          echo "commits_hist=1" >> $GITHUB_ENV
+        fi
+
         echo 'commits<<EOF' >> $GITHUB_ENV
-        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' >> $GITHUB_ENV
+        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | tail -"$commits_hist" >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
 
     - name: Check PR Title and Commit Title(s)
