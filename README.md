@@ -21,4 +21,6 @@ on:
 jobs:
   semantic:
     uses: influxdata/validate-semantic-github-messages/.github/workflows/semantic.yml@main
+    with:
+      COMMITS_HISTORY: 1
 ```

@@ -5,6 +5,12 @@ on:
   pull_request:
     types: [ opened, reopened, synchronize, edited ]
   workflow_call:
+    inputs:
+      COMMITS_HISTORY:
+        description: 'Number of commits to consider, starting with most recent (e.g. 1 = only look at most recent).'
+        default: 1
+        required: false
+        type: number
 
 env:
   PR_TITLE: ${{ github.event.pull_request.title }}
@@ -30,7 +36,9 @@ jobs:
           json=$( curl --fail --retry 3 --silent "$COMMITS_URL" )
         fi
         echo 'commits<<EOF' >> $GITHUB_ENV
-        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' >> $GITHUB_ENV
+        echo "COMMITS_HISTORY = ${{ inputs.COMMITS_HISTORY }}"
+        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")'
+        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | tail -"${{ inputs.COMMITS_HISTORY }}" >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
 
     - name: Check PR Title and Commit Title(s)
