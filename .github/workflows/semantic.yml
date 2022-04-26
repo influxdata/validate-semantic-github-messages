@@ -8,7 +8,8 @@ on:
     inputs:
       COMMITS_HISTORY:
         description: 'Number of commits to consider, starting with most recent (e.g. 1 = only look at most recent).'
-        default: 16
+        # 250 appears to be the limit of `gh api --paginate $COMMITS_URL`
+        default: 250
         required: false
         type: number
 
@@ -30,11 +31,7 @@ jobs:
     - name: Fetch PR Details
       shell: bash
       run: |
-        if [[ $GITHUB_TOKEN ]]; then
-          json=$( curl --header "Authorization: Bearer $GITHUB_TOKEN" --fail --retry 3 --silent "$COMMITS_URL" )
-        else
-          json=$( curl --fail --retry 3 --silent "$COMMITS_URL" )
-        fi
+        json=$( gh api --paginate $COMMITS_URL )
         echo 'commits<<EOF' >> $GITHUB_ENV
         echo "COMMITS_HISTORY = ${{ inputs.COMMITS_HISTORY }}"
         echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")'
@@ -59,10 +56,10 @@ jobs:
           commit_hash_short=${commit:0:7}
         
           if [[ ! $commit_title =~ $SEMANTIC_PATTERN ]]; then
-            echo ::error::Commit title $commit_hash_short not semantic: "$commit_title"
+            echo ::error::$commit_hash_short not semantic: "$commit_title"
             exit_code=1
           else
-            echo Commit title $commit_hash_short OK: "$commit_title"
+            echo $commit_hash_short OK: "$commit_title"
           fi
         done <<< $commits
         
