@@ -13,10 +13,10 @@ while read -r commit; do
   commit_hash_short=${commit:0:7}
 
   if [[ ! $commit_title =~ $SEMANTIC_PATTERN ]]; then
-    echo ::error::Commit title $commit_hash_short not semantic: "$commit_title"
+    echo ::error::$commit_hash_short not semantic: "$commit_title"
     exit_code=1
   else
-    echo Commit title $commit_hash_short OK: "$commit_title"
+    echo $commit_hash_short OK: "$commit_title"
   fi
 done <<< $commits
 

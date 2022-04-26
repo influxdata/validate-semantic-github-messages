@@ -9,7 +9,7 @@ To test:
 ./test_semantic_pattern.sh
 ```
 
-To use this workflow in your repo, create file `.github/workflows/semantic.yml:
+To use this workflow in your repo, create file `.github/workflows/semantic.yml`:
 ```yaml
 ---
 name: "Semantic PR and Commit Messages"
@@ -21,6 +21,7 @@ on:
 jobs:
   semantic:
     uses: influxdata/validate-semantic-github-messages/.github/workflows/semantic.yml@main
+    # optional; 250 is default and max
     with:
       COMMITS_HISTORY: 1
 ```
