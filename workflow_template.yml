@@ -27,19 +27,17 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.pull_request.head.sha }}
-
     - name: Fetch PR Details
       shell: bash
       run: |
-        json=$( gh api --paginate $COMMITS_URL )
-        echo 'commits<<EOF' >> $GITHUB_ENV
         echo "COMMITS_HISTORY = ${{ inputs.COMMITS_HISTORY }}"
-        if [[ "1" -le "${{ inputs.COMMITS_HISTORY }}" ]]; then
+        if [[ "${{ inputs.COMMITS_HISTORY }}" -ge "1" ]]; then
+          json=$( gh api --paginate $COMMITS_URL )
+          echo 'commits<<EOF' >> $GITHUB_ENV
           echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")'
           echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | tail -"${{ inputs.COMMITS_HISTORY }}" >> $GITHUB_ENV
-	fi
-        echo 'EOF' >> $GITHUB_ENV
-
+          echo 'EOF' >> $GITHUB_ENV
+        fi
     - name: Check PR Title and Commit Title(s)
       shell: bash
       run: |
