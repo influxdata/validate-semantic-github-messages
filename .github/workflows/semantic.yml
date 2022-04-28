@@ -31,8 +31,7 @@ jobs:
       shell: bash
       run: |
         echo "COMMITS_HISTORY = ${{ inputs.COMMITS_HISTORY }}"
-	export c_h="${{ inputs.COMMITS_HISTORY }}"
-	if [[ "1" -le "$c_h" ]]; then echo "Got here"; else echo "Not here"; fi
+	if [[ "1" -le "1" ]]; then echo "Got here"; else echo "Not here"; fi
         json=$( gh api --paginate $COMMITS_URL )
         echo 'commits<<EOF' >> $GITHUB_ENV
         echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")'
