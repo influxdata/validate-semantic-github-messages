@@ -31,13 +31,13 @@ jobs:
       shell: bash
       run: |
         echo "COMMITS_HISTORY = ${{ inputs.COMMITS_HISTORY }}"
-	if [ ${{ inputs.COMMITS_HISTORY}} -ge 1 ]; then
+        if (( ${{ inputs.COMMITS_HISTORY}} >= 1 )); then
           json=$( gh api --paginate $COMMITS_URL )
           echo 'commits<<EOF' >> $GITHUB_ENV
           echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")'
           echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | tail -"${{ inputs.COMMITS_HISTORY }}" >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-	fi
+        fi
     - name: Check PR Title and Commit Title(s)
       shell: bash
       run: |

@@ -8,7 +8,7 @@ else
   echo PR title OK: "$PR_TITLE"
 fi
 
-if [ ${{ inputs.COMMITS_HISTORY}} -ge 1 ]; then
+if (( ${{ inputs.COMMITS_HISTORY}} >= 1 )); then
   while read -r commit; do
     commit_title=${commit:41}
     commit_hash_short=${commit:0:7}
