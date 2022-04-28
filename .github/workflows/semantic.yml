@@ -31,16 +31,13 @@ jobs:
       shell: bash
       run: |
         echo "COMMITS_HISTORY = ${{ inputs.COMMITS_HISTORY }}"
-	if [[ "1" > "0" ]]; then
-	  echo "Got here"
-	else
-	  echo "Not here"
+	if (( 1 <= ${{ inputs.COMMITS_HISTORY}} )); then
+          json=$( gh api --paginate $COMMITS_URL )
+          echo 'commits<<EOF' >> $GITHUB_ENV
+          echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")'
+          echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | tail -"${{ inputs.COMMITS_HISTORY }}" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
 	fi
-        json=$( gh api --paginate $COMMITS_URL )
-        echo 'commits<<EOF' >> $GITHUB_ENV
-        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")'
-        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | tail -"${{ inputs.COMMITS_HISTORY }}" >> $GITHUB_ENV
-        echo 'EOF' >> $GITHUB_ENV
     - name: Check PR Title and Commit Title(s)
       shell: bash
       run: |
@@ -54,16 +51,18 @@ jobs:
           echo PR title OK: "$PR_TITLE"
         fi
         
-        while read -r commit; do
-          commit_title=${commit:41}
-          commit_hash_short=${commit:0:7}
+        if (( 1 <= ${{ inputs.COMMITS_HISTORY}} )); then
+          while read -r commit; do
+            commit_title=${commit:41}
+            commit_hash_short=${commit:0:7}
         
-          if [[ ! $commit_title =~ $SEMANTIC_PATTERN ]]; then
-            echo ::error::$commit_hash_short not semantic: "$commit_title"
-            exit_code=1
-          else
-            echo $commit_hash_short OK: "$commit_title"
-          fi
-        done <<< $commits
+            if [[ ! $commit_title =~ $SEMANTIC_PATTERN ]]; then
+              echo ::error::$commit_hash_short not semantic: "$commit_title"
+              exit_code=1
+            else
+              echo $commit_hash_short OK: "$commit_title"
+            fi
+          done <<< $commits
+        fi
         
         exit $exit_code
