@@ -31,7 +31,7 @@ jobs:
       shell: bash
       run: |
         echo "COMMITS_HISTORY = ${{ inputs.COMMITS_HISTORY }}"
-        if (( ${{ inputs.COMMITS_HISTORY}} >= 1 )); then
+        if (( ${{ inputs.COMMITS_HISTORY}} != 0 )); then
           json=$( gh api --paginate $COMMITS_URL )
           echo 'commits<<EOF' >> $GITHUB_ENV
           echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")'
@@ -51,7 +51,7 @@ jobs:
           echo PR title OK: "$PR_TITLE"
         fi
         
-        if (( ${{ inputs.COMMITS_HISTORY}} >= 1 )); then
+        if (( ${{ inputs.COMMITS_HISTORY}} != 0 )); then
           while read -r commit; do
             commit_title=${commit:41}
             commit_hash_short=${commit:0:7}
