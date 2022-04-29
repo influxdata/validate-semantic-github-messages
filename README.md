@@ -21,7 +21,13 @@ on:
 jobs:
   semantic:
     uses: influxdata/validate-semantic-github-messages/.github/workflows/semantic.yml@main
-    # optional; 250 is default and max
     with:
+      # Optional: integer >= 0, 250 is default and max
       COMMITS_HISTORY: 1
+      # Optional: Dafault is false, in which case there is no change in bahavior.
+      # When true, logic is as follow:
+      # If there is one commit, only validate its commit message (and not the PR title). 
+      # Else validate PR title only (and skip commit messages).  
+      # *** This takes precedence over COMMITS_HISTORY. **
+      CHECK_PR_TITLE_OR_ONE_COMMIT: false
 ```
