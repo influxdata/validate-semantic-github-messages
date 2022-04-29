@@ -8,8 +8,8 @@ json=$( gh api --paginate $COMMITS_URL )
 commits_count=$(echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | wc -l)
 check_pr_title=true
 
-if [[ ${{ inputs.CHECK_PR_TITLE_OR_ONE_COMMIT }} -eq true ]]; then
-  if (($commits_count == 1 )); then
+if [[ ${{ inputs.CHECK_PR_TITLE_OR_ONE_COMMIT }} ]]; then
+  if (( $commits_count == 1 )); then
     check_pr_title=false
     commits_to_check=1
   else
@@ -23,7 +23,7 @@ echo "Check pr title: $check_pr_title"
 echo "Total commits count for PR: $commits_count"
 echo "Commits to validate: $commits_to_check"
 
-if [[ $check_pr_title -eq true ]]; then
+if [[ $check_pr_title ]]; then
   if [[ ! $PR_TITLE =~ $SEMANTIC_PATTERN ]]; then
     echo ::error::PR title not semantic: "$PR_TITLE"
     exit_code=1
