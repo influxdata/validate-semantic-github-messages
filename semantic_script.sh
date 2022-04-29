@@ -3,19 +3,16 @@ exit_code=0
 
 # When running the check against its own repo, the inputs will be blank, so
 # in this case set them.  This will never happen when called as a reusable workflow.
-if [[ "" -eq "${{ inputs.COMMITS_HISTORY }}" ]]; then 
-  commits_history=250
-else
+commits_history=250
+if [[ "" != "${{ inputs.COMMITS_HISTORY }}" ]]; then 
   commits_history=${{ inputs.COMMITS_HISTORY }}
 fi
 
-if [[ "" -eq "${{ inputs.CHECK_PR_TITLE_OR_ONE_COMMIT }}" ]]; then
-  tg_style=false
-else
+tg_style=false
+if [[ "" != "${{ inputs.CHECK_PR_TITLE_OR_ONE_COMMIT }}" ]]; then
   tg_style=${{ inputs.CHECK_PR_TITLE_OR_ONE_COMMIT }}
 fi
   
-
 echo "COMMITS_HISTORY = $commits_history"
 echo "CHECK_PR_TITLE_OR_ONE_COMMIT = $tg_style"
 
