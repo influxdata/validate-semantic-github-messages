@@ -12,6 +12,11 @@ on:
         default: 250
         required: false
         type: number
+      CHECK_PR_TITLE_OR_ONE_COMMIT:
+        description: 'If there is one commit, only validate its commit message (and not the PR title). Else validate PR title only (and skip commit messages).  This takes precedence over COMMITS_HISTORY.'
+        default: false
+        required: false
+        type: boolean
 
 env:
   PR_TITLE: ${{ github.event.pull_request.title }}
@@ -28,39 +33,56 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha }}
 
-    - name: Fetch PR Details
+    - name: Fetch then Check PR Title and Commit Title(s)
       shell: bash
       run: |
-        json=$( gh api --paginate $COMMITS_URL )
-        echo 'commits<<EOF' >> $GITHUB_ENV
-        echo "COMMITS_HISTORY = ${{ inputs.COMMITS_HISTORY }}"
-        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")'
-        echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | tail -"${{ inputs.COMMITS_HISTORY }}" >> $GITHUB_ENV
-        echo 'EOF' >> $GITHUB_ENV
-
-    - name: Check PR Title and Commit Title(s)
-      shell: bash
-      run: |
-        # expected env vars: SEMANTIC_PATTERN, PR_TITLE, commits
+        # expected env vars: SEMANTIC_PATTERN, PR_TITLE, COMMITS_URL
         exit_code=0
         
-        if [[ ! $PR_TITLE =~ $SEMANTIC_PATTERN ]]; then
-          echo ::error::PR title not semantic: "$PR_TITLE"
-          exit_code=1
+        echo "COMMITS_HISTORY = ${{ inputs.COMMITS_HISTORY }}"
+        echo "CHECK_PR_TITLE_OR_ONE_COMMIT = ${{ inputs.CHECK_PR_TITLE_OR_ONE_COMMIT }}"
+        
+        json=$( gh api --paginate $COMMITS_URL )
+        commits_count=$(echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | wc -l)
+        check_pr_title=true
+        
+        if [[ ${{ inputs.CHECK_PR_TITLE_OR_ONE_COMMIT }} == true ]]; then
+          if (($commits_count == 1 )); then
+            check_pr_title=false
+            commits_to_check=1
+          else
+            commits_to_check=0
+          fi
         else
-          echo PR title OK: "$PR_TITLE"
+          commits_to_check=${{ inputs.COMMITS_HISTORY }}
         fi
         
-        while read -r commit; do
-          commit_title=${commit:41}
-          commit_hash_short=${commit:0:7}
+        echo "Check pr title: $check_pr_title"
+        echo "Total commits count for PR: $commits_count"
+        echo "Commits to validate: $commits_to_check"
         
-          if [[ ! $commit_title =~ $SEMANTIC_PATTERN ]]; then
-            echo ::error::$commit_hash_short not semantic: "$commit_title"
+        if [[ $check_pr_title == true ]]; then
+          if [[ ! $PR_TITLE =~ $SEMANTIC_PATTERN ]]; then
+            echo ::error::PR title not semantic: "$PR_TITLE"
             exit_code=1
           else
-            echo $commit_hash_short OK: "$commit_title"
+            echo PR title OK: "$PR_TITLE"
           fi
-        done <<< $commits
+        fi
+        
+        if [[ 0 != $commits_to_check ]]; then
+          commits=$( echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | tail -$commits_to_check )
+          while read -r commit; do
+            commit_title=${commit:41}
+            commit_hash_short=${commit:0:7}
+        
+            if [[ ! $commit_title =~ $SEMANTIC_PATTERN ]]; then
+              echo ::error::$commit_hash_short not semantic: "$commit_title"
+              exit_code=1
+            else
+              echo $commit_hash_short OK: "$commit_title"
+            fi
+          done <<< $commits
+        fi
         
         exit $exit_code
