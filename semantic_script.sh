@@ -9,7 +9,7 @@ else
   commits_history=${{ inputs.COMMITS_HISTORY }}
 fi
 
-if [[ "" -eq "${{ inputs.CHECK_PR_TITLE_OR_ONE_COMMIT }}"]]; then
+if [[ "" -eq "${{ inputs.CHECK_PR_TITLE_OR_ONE_COMMIT }}" ]]; then
   tg_style=false
 else
   tg_style=${{ inputs.CHECK_PR_TITLE_OR_ONE_COMMIT }}
