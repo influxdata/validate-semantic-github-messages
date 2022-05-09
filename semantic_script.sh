@@ -20,7 +20,7 @@ json=$( gh api --paginate $COMMITS_URL )
 commits_count=$(echo $json | jq --raw-output '.[] | [.sha, (.commit.message | split("\n") | first)] | join(" ")' | wc -l)
 check_pr_title=true
 
-if [[ tg_style == true ]]; then
+if [[ $tg_style == true ]]; then
   if (($commits_count == 1 )); then
     check_pr_title=false
     commits_to_check=1
