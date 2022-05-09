@@ -20,4 +20,12 @@ while read -r commit; do
   fi
 done <<< $commits
 
+if [ $exit_code -ne 0 ]; then
+  echo
+  echo "This repository uses semantic commit messages"
+  echo "check out https://www.conventionalcommits.org/ for more information"
+  echo "and rewrite any rejected commit messages to pass CI - thanks!"
+  echo
+fi
+
 exit $exit_code
