@@ -1,7 +1,7 @@
 # validate-semantic-github-messages
 Simple GitHub workflow that checks for [conventional commit messages](https://www.conventionalcommits.org/en/v1.0.0/).
-Validation is per conventional commits (www.conventionalcommits.org).
 Implemented in Bash, with unit tests.
+Intended for use in all InfluxData repositories.
 
 To test:
 ```console
