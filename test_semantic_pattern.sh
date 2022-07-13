@@ -11,6 +11,8 @@ echo checking PR and commit titles that should be OK
 expect_ok=$( cat << EOF
 chore: foo
 chore(hello): foo
+security: bar
+security(hello): bar
 Revert "fix: certain this fix is correct!"
 Merge remote-tracking branch 'origin/main' into alamb/update_df_101
 Merge branch 'main' into foo
@@ -37,6 +39,10 @@ chore:foo
 Chore: foo
 Revert my thing
 Merge this is not a legit merge
+security
+security:
+security\(:
+Security: bar
 EOF
 )
 
