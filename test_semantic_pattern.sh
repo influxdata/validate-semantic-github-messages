@@ -9,6 +9,8 @@ exit_code=0
 echo checking PR and commit titles that should be OK
 
 expect_ok=$( cat << EOF
+fix!: foo
+fix(foo)!: foo
 chore: foo
 chore(hello): foo
 Revert "fix: certain this fix is correct!"
