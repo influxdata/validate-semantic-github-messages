@@ -7,7 +7,8 @@ on:
 
 jobs:
   main:
-    runs-on: ubuntu-latest
+    runs-on:
+      group: self-hosted
     steps:
     - uses: actions/checkout@v4
       with:
